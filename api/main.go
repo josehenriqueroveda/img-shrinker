@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"io"
@@ -58,10 +59,32 @@ func shrinkImages(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
-		src := imaging.Resize(imageFile, 480, 0, imaging.Lanczos)
-		err = imaging.Save(src, fmt.Sprintf("./temp/images/%v", newFilename))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+		if file.Size > 1024*1024 {
+			for {
+				src := imaging.Resize(imageFile, 720, 0, imaging.Lanczos)
+				buf := new(bytes.Buffer)
+				err = imaging.Encode(buf, src, imaging.JPEG)
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+					return
+				}
+				if int64(buf.Len()) < 1024*1024 {
+					err = imaging.Save(src, fmt.Sprintf("./temp/images/%v", newFilename))
+					if err != nil {
+						c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+						return
+					}
+					break
+				}
+				imageFile = src
+			}
+		} else {
+			err = imaging.Save(imageFile, fmt.Sprintf("./temp/images/%v", newFilename))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{"filepath": filePaths})
