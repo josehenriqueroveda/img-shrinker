@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/disintegration/imaging"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,7 +40,7 @@ func storeImages(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 	}
-	c.JSON(http.StatusOK, gin.H{"filepath": filePaths})
+	c.JSON(http.StatusOK, gin.H{"filepaths": filePaths})
 }
 
 func shrinkImages(c *gin.Context) {
@@ -87,11 +88,21 @@ func shrinkImages(c *gin.Context) {
 			}
 		}
 	}
-	c.JSON(http.StatusOK, gin.H{"filepath": filePaths})
+	c.JSON(http.StatusOK, gin.H{"filepaths": filePaths})
 }
 
 func main() {
 	r := gin.Default()
+
+	r.LoadHTMLGlob("./templates/*")
+
+	r.Static("/temp", "./temp")
+
+	// Enable CORS
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"}
+	config.AllowHeaders = []string{"Origin", "Content-Lenght", "Content-Type", "Authorization"}
+	r.Use(cors.New(config))
 
 	r.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -99,9 +110,14 @@ func main() {
 		})
 	})
 
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
+
 	r.POST("/api/images/store", storeImages)
 
 	r.POST("/api/images/shrink", shrinkImages)
 
 	r.Run(":8800")
+
 }
