@@ -1,4 +1,6 @@
 # Image Shrinker API
+[![made-with-Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev/)
+[![GitHub go.mod Go version of a Go module](https://img.shields.io/github/go-mod/go-version/josehenriqueroveda/img-shrinker.svg)](https://github.com/josehenriqueroveda/img-shrinker)
 
 This is an API written in Go that allows to resize and store images. This is a common use case for image hosting websites, where users upload images and the website reduce its size, stores them and returns a URL to the image. It can be used as a microservice in a larger application and reduce costs by reducing the size of the images stored.
 
